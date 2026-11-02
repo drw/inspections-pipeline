@@ -71,6 +71,12 @@ I'd also check with the data steward to see how often the historical data in the
 
 (Under these circumstances, I'd have to forgo my plan to wipe the database tables at the beginning of each script run. Instead, I'd compare the source data schema with the destination data schema and trigger an exception and alert for schema mismatches.)
 
+## What Surprised Me in the Data
+
+* That there are gas stations in Allegheny County with 22 gas pumps.
+* That there are jewelry scales with capacities of 46 pounds.
+* That there are interesting questions lurking in any sufficiently large dataset. (Though I really shouldn't be surprised by that!)
+
 ## AI disclosure
 
 No AI tools were used in working on this assignment.
