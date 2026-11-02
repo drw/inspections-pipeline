@@ -77,6 +77,6 @@ I'd also check with the data steward to see how often the historical data in the
 * That there are jewelry scales with capacities of 46 pounds.
 * That there are interesting questions lurking in any sufficiently large dataset. (Though I really shouldn't be surprised by that!)
 
-## AI disclosure
+## AI Disclosure
 
 No AI tools were used in working on this assignment.
