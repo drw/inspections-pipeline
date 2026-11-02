@@ -1,4 +1,4 @@
-# Everyone loves piplines
+# Fuel Pump Inspections Pipeline
 
 ## Overview
 
@@ -16,7 +16,7 @@ The script iterates through the three tables in the Allegheny County Weights and
 
 To fix the fact that `device_type` values that should have been identical were fragmented into title case (e.g. "Tape Measure") and all caps ("TAPE MEASURE") variants, I standardized this field by converting all values to all caps. The same transformation was applied to a few other fields.
 
-Another problem  that needed to be addressed was the presence of extra spaces, such as multiple spaces between the value and units in the `capacity` field (e.g., "30  LB") or trailing spaces (such as the value "8 " appearing in the `pump` field, distinguishing it from the more common "8" value).
+Another problem that needed to be addressed was the presence of extra spaces, such as multiple spaces between the value and units in the `capacity` field (e.g., "30&nbsp;&nbsp;LB") or trailing spaces (such as the value "8 " appearing in the `pump` field, distinguishing it from the more common "8" value).
 
 I used a regex to split space-less `capacity` strings like "30LB", adding a space between the numerical value and the units.
 
@@ -28,7 +28,7 @@ While there are a couple of data quality checks that enforce controlled vocabula
 
 1) **Downloading data:** I considered pulling the data from the /datastore/dump/ API endpoint. This is because I noticed that the WPRDC data portal was sometimes failing to load pages (or datastore table views) in the browser because of 502 Bad Gateway errors, and my initial thought was that getting all the data in one API request might be a good idea to minimize the chance of such broken connections.
 
-    However, I realized that, if the frequency of connection errors were sufficiently high, it would be better to download the data in the chunk size allowed by the CKAN server; this is because downloading, say 7 million records of an 8-million record table, only to be interrupted by an error will take longer than downloading the first 7 million records in small chunks and then getting interrupted on the *n*th chunk and having to retry it. Also, if one is downloading a sufficiently large set of data, there are situations where it may overtax the CKAN server to do it all in one fell swoop. Pulling the data in chunks through the CKAN API will take more HTTP requests and will add some (possibly inconsequential) amount of time (in the situation that no errors interrupt the data transmission), but the download process will be more robust.
+    However, I realized that, if the frequency of connection errors were sufficiently high, it would be better to download the data in the chunk size allowed by the CKAN server; this is because downloading, say 7 million records of an 8-million record table, only to be interrupted by an error will take longer than downloading the first 7 million records in small chunks and then getting interrupted on the *n*th chunk and having to retry it. Also, if one is downloading a sufficiently large set of data, there are situations where it may overtax the CKAN server to do it all in one fell swoop. Pulling the data in chunks through the CKAN API will take more HTTP requests and will add some (possibly inconsequential) amount of time, but the download process will be more robust.
 
     I also used the `tenacity` Python library, which makes it easy to add decorators to functions to automate retries in case of failure.
 
@@ -38,21 +38,23 @@ While there are a couple of data quality checks that enforce controlled vocabula
 
 ## The Data Question
 
-I decided to investigate gas pump inspections. I was curious about the variation in the pass rate for fuel pumps since a higher rate of malfunctioning fuel pumps could be of interest to both consumers and County inspectors. To reduce this to an easily answered question, I narrowed this down to "Which fueling locations have the worst fuel-pump-inspection pass rates?"
+I decided to investigate gas pump inspections. I was curious about the variation in the pass rate for fuel pumps. Since knowing where there might be a higher rate of malfunctioning fuel pumps seems valuable, I tried to answer "Which fueling locations have the worst fuel-pump-inspection pass rates?"
 
-A short table is presented when running main.py; the full results of the query are in the SQLite database, in the table named `pass_rates`.
+A short table is presented when running the `main.py` script; the full results of the query are in the SQLite database, in the table named `pass_rates`.
 
 The numbers of pumps and inspections were included to give a sense of the amount of data that was available for that station, though I think that inspections per pump may be a more useful metric for judging the amount of evidence for rows in the output table.
 
-It's worth noting that of the 422 fueling locations, 54 have perfect 100% pass rates, and some of those have had hundreds of inspections.
-
-One dimension I didn't have the chance to dig into was time. The Inspections table represents more than 10 years of activity, and the recency and distribution of inspection failures in time is an important consideration.
+It's worth noting that of the 422 fueling locations, 54 currently have perfect 100% pass rates, and some of those have had hundreds of fuel-pump inspections.
 
 ## Caveats and Limitations
 
-I'm using the maximum value in the `pump` column from the Devices table as a proxy for the number of fuel pumps at each gas station. It has been consistent with the apparent number of pumps in the cases I've checked, but this should be more carefully checked.
+One dimension I didn't have the chance to dig into was time. The Inspections table represents more than 10 years of activity, and the recency and distribution of inspection failures in time is an important consideration.
 
-While I tried to eliminate non-commercial fueling locations, it would have been time-consuming to check all of the locations with fuel dispensers, so there are a number of locations that are no regular gas stations in the `pass_rates` table.
+I'm using the maximum value in the `pump` column from the Devices table as a proxy for the number of fuel pumps at each gas station. It has been consistent with the apparent number of pumps in the cases
+I've checked, but this should be more carefully validated.
+
+While I tried to eliminate non-commercial fueling locations, it would have been time-consuming to check all of the locations with fuel dispensers, so there are a number of locations that are not regular
+gas stations in the `pass_rates` table.
 
 ## What I'd Do Differently...
 ### ...with Daily Data Refreshes
